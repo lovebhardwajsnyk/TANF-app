@@ -251,7 +251,7 @@ class Common(Configuration):
     OIDC_RP_IDP_SIGN_KEY = os.environ['JWT_KEY']
     
     OIDC_OP_JWKS_ENDPOINT = authuri
-    OIDC_OP_AUTHORIZATION_ENDPOINT = authuri
+    OIDC_OP_AUTHORIZATION_ENDPOINT = authuri + '/openid_connect/authorize'
     OIDC_OP_TOKEN_ENDPOINT = authuri
     OIDC_OP_USER_ENDPOINT = appdomain + '/users'
     
