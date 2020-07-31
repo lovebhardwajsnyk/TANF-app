@@ -19,7 +19,7 @@ class Common(Configuration):
         'django.contrib.sessions',
         'django.contrib.messages',
         'django.contrib.staticfiles',
-
+        'django_extensions',
 
         # Third party apps
         'rest_framework',            # Utilities for rest apis
