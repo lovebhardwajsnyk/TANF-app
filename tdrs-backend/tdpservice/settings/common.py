@@ -214,6 +214,23 @@ class Common(Configuration):
         key = json.loads(priv_key.export())
         keyset = {'keys': [key]}
         f.write(json.dumps(keyset))
+        
+    # conditionally set which URI to go to
+    if 'VCAP_APPLICATION' in os.environ:
+        appjson = os.environ['VCAP_APPLICATION']
+        appinfo = json.loads(appjson)
+        authuri = "https://secure.login.gov/"
+        if len(appinfo['application_uris']) > 0:
+            appdomain = 'https://' + appinfo['application_uris'][0]
+        else:
+            # We are not a web task, so we have no appuri
+            appuri = ''  
+    else:
+        # we are running locally
+        appdomain= 'http://localhost:8000'
+        authuri = "https://idp.int.identitysandbox.gov/"
+        
+    appuri = appdomain + '/openid/callback/login/'
 
     OIDC_RP_SIGN_ALGO = 'RS256'
     OIDC_RP_CLIENT_ID = os.environ['OIDC_RP_CLIENT_ID']
@@ -221,10 +238,10 @@ class Common(Configuration):
     OIDC_RP_IDP_SIGN_KEY = os.environ['JWT_KEY']
     
     OIDC_OP_JWKS_ENDPOINT = os.environ['OIDC_JWKS_ENDPOINT']
-    OIDC_OP_AUTHORIZATION_ENDPOINT = "<URL of the OIDC OP authorization endpoint>"
-    OIDC_OP_TOKEN_ENDPOINT = "<URL of the OIDC OP token endpoint>"
-    OIDC_OP_USER_ENDPOINT = "<URL of the OIDC OP userinfo endpoint>"
+    OIDC_OP_AUTHORIZATION_ENDPOINT = authuri
+    OIDC_OP_TOKEN_ENDPOINT = authuri
+    OIDC_OP_USER_ENDPOINT = appdomain + "/users"
     
-    LOGIN_REDIRECT_URL = "<URL path to redirect to after login>"
-    LOGOUT_REDIRECT_URL = "<URL path to redirect to after logout>"
+    LOGIN_REDIRECT_URL = appuri
+    LOGOUT_REDIRECT_URL = appdomain
 
