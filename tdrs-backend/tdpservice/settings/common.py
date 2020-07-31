@@ -224,7 +224,7 @@ class Common(Configuration):
             appdomain = 'https://' + appinfo['application_uris'][0]
         else:
             # We are not a web task, so we have no appuri
-            appuri = ''  
+            appdomain = ''
     else:
         # we are running locally
         appdomain= 'http://localhost:8000'

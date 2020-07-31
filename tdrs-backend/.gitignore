@@ -2,7 +2,7 @@
 /backend/db.sqlite3
 .DS_Store
 .env
-*/settings/local.py
+
 /staticfiles/*
 /mediafiles/*
 __pycache__/
@@ -43,3 +43,6 @@ boilerplate.zip
 # Spritesmith
 spritesmith-generated/
 spritesmith.scss
+
+# env
+systemenvironment.sh
