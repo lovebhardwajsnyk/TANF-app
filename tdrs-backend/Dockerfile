@@ -17,7 +17,6 @@ WORKDIR /tdpapp/
 RUN groupadd -g ${gid} ${group} && useradd -u ${uid} -g ${group} -s /bin/sh ${user}
 
 RUN chown -R tdpuser /tdpapp
-CMD ["echo $JWT_KEY"]
 
 EXPOSE 8000
 
