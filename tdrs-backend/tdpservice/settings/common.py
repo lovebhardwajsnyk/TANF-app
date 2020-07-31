@@ -219,7 +219,7 @@ class Common(Configuration):
     if 'VCAP_APPLICATION' in os.environ:
         appjson = os.environ['VCAP_APPLICATION']
         appinfo = json.loads(appjson)
-        authuri = "https://secure.login.gov/"
+        authuri = 'https://secure.login.gov/'
         if len(appinfo['application_uris']) > 0:
             appdomain = 'https://' + appinfo['application_uris'][0]
         else:
@@ -228,7 +228,7 @@ class Common(Configuration):
     else:
         # we are running locally
         appdomain= 'http://localhost:8000'
-        authuri = "https://idp.int.identitysandbox.gov/"
+        authuri = 'https://idp.int.identitysandbox.gov/'
         
     appuri = appdomain + '/openid/callback/login/'
 
@@ -240,7 +240,7 @@ class Common(Configuration):
     OIDC_OP_JWKS_ENDPOINT = os.environ['OIDC_JWKS_ENDPOINT']
     OIDC_OP_AUTHORIZATION_ENDPOINT = authuri
     OIDC_OP_TOKEN_ENDPOINT = authuri
-    OIDC_OP_USER_ENDPOINT = appdomain + "/users"
+    OIDC_OP_USER_ENDPOINT = appdomain + '/users'
     
     LOGIN_REDIRECT_URL = appuri
     LOGOUT_REDIRECT_URL = appdomain
