@@ -4,4 +4,4 @@ applications:
 - name: tdp-frontend
   instances: 1
   docker:
-    image: adamcaron/tdrs-frontend:initialVoyage
+    image: goraftdocker/tdp-frontend:test

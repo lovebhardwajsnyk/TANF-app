@@ -107,16 +107,40 @@ jobs:
           name:  "Push Frontend Image to Docker Hub"
           command: "docker push goraftdocker/tdp-frontend:devtest"
       - run:
-          name: "deploy to cloud.gov"
+          name: deploy to cloud.gov
           command: |
             # If we do not specify a space, then deploy to the branch that we are on.
             # Also map certain branches to spaces.
             # This lets you have dev/staging/main branches that automatically go to the right place.
+            if [ -n "$CF_SPACE" ] ; then
+              echo "CF_SPACE is hardcoded already"
+            elif [ "$CIRCLE_BRANCH" = main ] ; then
+              export CF_SPACE="tanf-prod"
+              export CF_USERNAME="$CF_USERNAME_PROD"
+              export CF_PASSWORD="$CF_PASSWORD_PROD"
+              export CGHOSTNAME="$CGHOSTNAME_PROD"
+            elif [ "$CIRCLE_BRANCH" = staging ] ; then
+              export CF_SPACE="tanf-staging"
+              export CF_USERNAME="$CF_USERNAME_STAGING"
+              export CF_PASSWORD="$CF_PASSWORD_STAGING"
+              export CGHOSTNAME="$CGHOSTNAME_STAGING"
+            elif [ "$CIRCLE_BRANCH" = dev ] ; then
+              export CF_SPACE="tanf-dev"
+              export CF_USERNAME="$CF_USERNAME_DEV"
+              export CF_PASSWORD="$CF_PASSWORD_DEV"
+              export CGHOSTNAME="$CGHOSTNAME_DEV"
+            else
+              export CF_SPACE="$CIRCLE_BRANCH"
+            fi
+            if [ -z "$CF_ORG" ] ; then
+              echo CF_ORG not set, aborting
+              exit 1
+            fi
             cf api https://api.fr.cloud.gov
-            cf auth $CF_USERNAME_DEV $CF_PASSWORD_DEV
-            cf target -o $CF_ORG -s $CF_SPACE
-            cd tdrs-backend; cf push tdp-backend --docker-image  goraftdocker/tdp-backend:test 
-            cd tdrs-frontend; cf push tdp-frontend --docker-image  goraftdocker/tdp-frontend:test
+            cf auth "$CF_USERNAME" "$CF_PASSWORD"
+            cf target -o "$CF_ORG" -s "$CF_SPACE"
+            ./tdrs-backend/deploy-backend-cloudgov.sh
+            ./tdrs-frontend/deploy-frontend-cloudgov.sh
 
 workflows:
   build-and-test:
