@@ -66,8 +66,8 @@ jobs:
       #     name:  "Test: Execute Frontend  OWASP ZAP Vulnerability Scan"
       #     command: "cd tdrs-frontend; ./zap-scanner.sh"  
       - run:
-        name: 'Ensure sudo is installed, otherwise install it.'
-        command: "./scripts/sudo-check.sh"
+          name: 'Ensure sudo is installed, otherwise install it.'
+          command: "./scripts/sudo-check.sh"
       - snyk/scan:
           target-file: tdrs-frontned/yarn.lock
       - save_cache:
