@@ -101,9 +101,6 @@ jobs:
           name:  "Push Frontend Image to Docker Hub"
           command: "docker push goraftdocker/tdp-frontend:$CIRCLE_BRANCH"
       - run:
-          name:  "Update VARS.YML files  with docker image names"
-          command: "./scripts/make-var-yml.sh $CIRCLE_BRANCH"
-      - run:
           name: deploy to cloud.gov
           command: |
             # If we do not specify a space, then deploy to the branch that we are on.
@@ -130,7 +127,6 @@ jobs:
               export CGHOSTNAME_BACKEND="$CGHOSTNAME_BACKEND_DEV"
               export CGHOSTNAME_FRONTEND="$CGHOSTNAME_FRONTEND_DEV"
             elif [ "$CIRCLE_BRANCH" == "sprint-pr-hotfixes" ] ; then
-              echo made it into if statement
               export CF_SPACE="tanf-dev"
               export CF_USERNAME="$CF_USERNAME_DEV"
               export CF_PASSWORD="$CF_PASSWORD_DEV"
@@ -143,18 +139,11 @@ jobs:
               echo CF_ORG not set, aborting
               exit 1
             fi
-            echo $CF_SPACE
-            echo $CF_USERNAME
-            echo $CF_PASSWORD
-            echo $CGHOSTNAME_BACKEND
-            echo $CGHOSTNAME_FRONTEND
 
-            # cf api https://api.fr.cloud.gov
-            # cf auth "$CF_USERNAME" "$CF_PASSWORD"
-            # cf target -o $CF_ORG -s "$CF_SPACE"
-            # ./deploy-cloudgov_docker.sh $CGHOSTNAME_BACKEND $CGHOSTNAME_FRONTEND $DOCKER_IMAGE_BACKEND $DOCKER_IMAGE_FRONTEND
-            # ./tdrs-backend/deploy-backend-cloudgov.sh
-            # ./tdrs-frontend/deploy-frontend-cloudgov.sh
+            cf api https://api.fr.cloud.gov
+            cf auth "$CF_USERNAME" "$CF_PASSWORD"
+            cf target -o $CF_ORG -s "$CF_SPACE"
+            ./deploy-cloudgov_docker.sh $CGHOSTNAME_BACKEND $CGHOSTNAME_FRONTEND $DOCKER_IMAGE_BACKEND $DOCKER_IMAGE_FRONTEND
 workflows:
   build-and-test:
     jobs:
