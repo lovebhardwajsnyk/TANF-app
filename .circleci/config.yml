@@ -70,7 +70,7 @@ jobs:
           command: "./scripts/sudo-check.sh"
       - snyk/scan:
           target-file: tdrs-frontend/yarn.lock
-          severity-threshold: medium
+          severity-threshold: high
       - save_cache:
           name: Save Yarn Cache
           key: yarn-packages-{{ checksum "yarn.lock" }}
