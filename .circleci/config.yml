@@ -155,7 +155,7 @@ jobs:
             cf api https://api.fr.cloud.gov
             cf auth "$CF_USERNAME" "$CF_PASSWORD"
             cf target -o $CF_ORG -s "$CF_SPACE"
-            ./deploy-cloudgov_docker.sh rolling test $CGHOSTNAME_BACKEND $CGHOSTNAME_FRONTEND $DOCKER_IMAGE_BACKEND $DOCKER_IMAGE_FRONTEND $CIRCLE_BRANCH
+            ./deploy-cloudgov-docker.sh rolling test $CGHOSTNAME_BACKEND $CGHOSTNAME_FRONTEND $DOCKER_IMAGE_BACKEND $DOCKER_IMAGE_FRONTEND $CIRCLE_BRANCH
 orbs:
   snyk: snyk/snyk@0.0.10
 workflows:
