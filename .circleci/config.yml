@@ -105,7 +105,7 @@ jobs:
           command: "./scripts/make-var-yml.sh $CIRCLE_BRANCH"
       - run:
           name:  "Check Files"
-          command: "cat tdrs-frontend/vars-frontend.yml; cat tdrs-backend/vars-frontend.yml; "
+          command: "cat tdrs-frontend/vars-frontend.yml; cat tdrs-backend/vars-backend.yml; "
           
       # - run:
       #     name: deploy to cloud.gov
