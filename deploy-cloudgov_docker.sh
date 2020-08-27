@@ -6,13 +6,15 @@
 
 # These are the hostnames and docker image file names
 DEPLOY_STRATEGY=${1}
-CGHOSTNAME_BACKEND=${2}
-CGHOSTNAME_FRONTEND=${3}
-DOCKER_IMAGE_BACKEND=${4}
-DOCKER_IMAGE_FRONTEND=${5}
-CIRCLE_BRANCH=${6}
+DEPLOY_ENV=${2}
+CGHOSTNAME_BACKEND=${3}
+CGHOSTNAME_FRONTEND=${4}
+DOCKER_IMAGE_BACKEND=${5}
+DOCKER_IMAGE_FRONTEND=${6}
+CIRCLE_BRANCH=${7}
 
 echo DEPLOY_STRATEGY: $DEPLOY_STRATEGY
+echo DEPLOY_ENV=$DEPLOY_ENV
 echo BACKEND_HOST: $CGHOSTNAME_BACKEND
 echo FRONTEND_HOST: $CGHOSTNAME_FRONTEND
 echo DOCKER_BACKEND_IMAGE: $DOCKER_IMAGE_BACKEND
@@ -29,15 +31,13 @@ service_exists()
 update_frontend()
 {
 	if [ "$1" = "rolling" ] ; then
-	    echo WOOO
 		# Do a zero downtime deploy.  This requires enough memory for
 		# two apps to exist in the org/space at one time.
-		# --strategy rolling || exit 1
+		cf push $CGHOSTNAME_FRONTEND --no-route -f tdrs-frontend/manifest.yml --var docker-frontend=$DOCKER_IMAGE_FRONTEND --strategy rolling || exit 1
 	else
-	    echo WEEE
-		#cf push $CGHOSTNAME_FRONTEND -f tdrs-frontend/manifest.yml --no-route
+		cf push $CGHOSTNAME_FRONTEND --no-route -f tdrs-frontend/manifest.yml --var docker-frontend=$DOCKER_IMAGE_FRONTEND
 	fi
-	#cf map-route $CGHOSTNAME_FRONTEND app.cloud.gov --hostname "${2}"
+	cf map-route $CGHOSTNAME_FRONTEND app.cloud.gov --hostname "${CGHOSTNAME_FRONTEND}"
 }
 
 update_backend()
@@ -45,39 +45,26 @@ update_backend()
 	if [ "$1" = "rolling" ] ; then
 		# Do a zero downtime deploy.  This requires enough memory for
 		# two apps to exist in the org/space at one time.
-		#cf push $CGHOSTNAME_BACKEND --no-route -f tdrs-backend/manifest.yml --var docker-backend=$DOCKER_IMAGE_BACKEND --strategy rolling || exit 1
-		echo wip
+		cf push $CGHOSTNAME_BACKEND --no-route -f tdrs-backend/manifest.yml --var docker-backend=$DOCKER_IMAGE_BACKEND --strategy rolling || exit 1
+
 	else
-		#cf push $CGHOSTNAME_BACKEND --no-route -f tdrs-backend/manifest.yml --var docker-backend=$DOCKER_IMAGE_BACKEND --no-route
-        
+		cf push $CGHOSTNAME_BACKEND --no-route -f tdrs-backend/manifest.yml --var docker-backend=$DOCKER_IMAGE_BACKEND
 		# set up JWT key if needed
 		if cf e $CGHOSTNAME_BACKEND | grep -q JWT_KEY ; then
 		   echo jwt cert already created
 		else
-		   echo wooop
-		   #export SETUPJWT="True"
+		   export SETUPJWT="True"
 	   fi
 	fi
-	#cf map-route $CGHOSTNAME_BACKEND app.cloud.gov --hostname "$CGHOSTNAME_BACKEND"
+	cf map-route $CGHOSTNAME_BACKEND app.cloud.gov --hostname "$CGHOSTNAME_BACKEND"
 }
 
-# launch the app
-if [ "$1" = "rolling" ] ; then
-	# set up backend
-	if cf app tdp-backend >/dev/null 2>&1 ; then
-		echo tdp-backend app already set up
-	else
-	    update_backend 'rolling'
-	fi
+# perform a rolling update for the backend and frontend deployments
+if [ $DEPLOY_STRATEGY = "rolling" ] ; then
 
-	# set up frontend
-	if cf app tdp-frontend >/dev/null 2>&1 ; then
-		echo tdp-frontend app already set up
-	else
-	    update_frontend 'rolling'
-	fi
+	update_backend 'rolling'
+	update_frontend 'rolling'
 fi
-
 
 if [ "$1" = "setup" ] ; then  echo
 	# create services (if needed)
@@ -92,7 +79,7 @@ if [ "$1" = "setup" ] ; then  echo
 	if service_exists "db-raft" ; then
 	  echo db-raft already created
 	else
-	  if [ "$6" = "prod" ] ; then
+	  if [ $DEPLOY_ENV = "prod" ] ; then
 	    cf create-service aws-rds medium-psql-redundant db-raft
 		  echo sleeping until db is awake
 		  for i in 1 2 3 ; do
@@ -106,15 +93,17 @@ if [ "$1" = "setup" ] ; then  echo
 	fi
 
 	# set up backend
-	if cf app tdp-backend >/dev/null 2>&1 ; then
-		echo tdp-backend app already set up
+	if cf app $CGHOSTNAME_BACKEND >/dev/null 2>&1 ; then
+		echo $CGHOSTNAME_BACKEND app already set up
 	else
 	    update_backend
+		cf bind-service $CGHOSTNAME_BACKEND db-raft
+		cf restage $CGHOSTNAME_BACKEND
 	fi
 
 	# set up frontend
-	if cf app tdp-frontend >/dev/null 2>&1 ; then
-		echo tdp-frontend app already set up
+	if cf app $CGHOSTNAME_FRONTEND >/dev/null 2>&1 ; then
+		echo $CGHOSTNAME_FRONTEND app already set up
 	else
 	    update_frontend
 	fi
@@ -124,19 +113,19 @@ generate_jwt_cert()
 {
 	echo "regenerating JWT cert/key"
 	yes 'XX' | openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 365 -nodes -sha256
-	cf set-env tdp-backend JWT_CERT "$(cat cert.pem)"
-	cf set-env tdp-backend JWT_KEY "$(cat key.pem)"
+	cf set-env $CGHOSTNAME_BACKEND JWT_CERT "$(cat cert.pem)"
+	cf set-env $CGHOSTNAME_BACKEND JWT_KEY "$(cat key.pem)"
 
 	# make sure that we have something set that you can later override with the
 	# proper value so that the app can start up
-	if cf e tdp-backend | grep -q OIDC_RP_CLIENT_ID ; then
+	if cf e $CGHOSTNAME_BACKEND | grep -q OIDC_RP_CLIENT_ID ; then
 		echo OIDC_RP_CLIENT_ID already set up
 	else
 		echo "once you have gotten your client ID set up with login.gov, you will need to set the OIDC_RP_CLIENT_ID to the proper value"
 		echo "you can do this by running: cf set-env tdp-backend OIDC_RP_CLIENT_ID 'your_client_id'"
 		echo "login.gov will need this cert when you are creating the app:"
 		cat cert.pem
-		cf set-env tdp-backend OIDC_RP_CLIENT_ID "XXX"
+		cf set-env $CGHOSTNAME_BACKEND OIDC_RP_CLIENT_ID "XXX"
 	fi
 }
 
