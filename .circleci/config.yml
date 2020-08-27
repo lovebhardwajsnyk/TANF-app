@@ -101,11 +101,8 @@ jobs:
           name:  "Push Frontend Image to Docker Hub"
           command: "docker push goraftdocker/tdp-frontend:$CIRCLE_BRANCH"
       - run:
-          name:  "Update Backend VARS.YML with docker image name "
-          command: "echo docker-backend: goraftdocker/tdp-backend:$CIRCLE_BRANCH\ > tdrs-backend/vars-backend.yml"
-      - run:
-          name:  "Update Frontend VARS.YML with docker image name "
-          command: "echo docker-frontend: goraftdocker/tdp-frontend:$CIRCLE_BRANCH\ > tdrs-frontned/vars-frontend.yml"
+          name:  "Update VARS.YML files  with docker image names"
+          command: "./scripts/make-var-yml.sh"
       - run:
           name:  "Check Files"
           command: "cat tdrs-frontned/vars-frontend.yml; cat tdrs-backend/vars-frontend.yml; "
