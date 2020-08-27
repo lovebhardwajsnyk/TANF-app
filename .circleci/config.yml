@@ -111,27 +111,25 @@ jobs:
             # This lets you have dev/staging/main branches that automatically go to the right place.
             export DOCKER_IMAGE_BACKEND="goraftdocker/tdp-backend:$CIRCLE_BRANCH"
             export DOCKER_IMAGE_FRONTEND="goraftdocker/tdp-frontend:$CIRCLE_BRANCH"
-            if [ -n "$CF_SPACE" ] ; then
-              echo "CF_SPACE is hardcoded already"
-            elif [ "$CIRCLE_BRANCH" == main ] ; then
+            if [ "$CIRCLE_BRANCH" == "main" ] ; then
               export CF_SPACE="tanf-prod"
               export CF_USERNAME="$CF_USERNAME_PROD"
               export CF_PASSWORD="$CF_PASSWORD_PROD"
               export CGHOSTNAME_BACKEND="$CGHOSTNAME_BACKEND_PROD"
               export CGHOSTNAME_FRONTEND="$CGHOSTNAME_FRONTEND_PROD"
-            elif [ "$CIRCLE_BRANCH" == staging ] ; then
+            elif [ "$CIRCLE_BRANCH" == "staging" ] ; then
               export CF_SPACE="tanf-staging"
               export CF_USERNAME="$CF_USERNAME_STAGING"
               export CF_PASSWORD="$CF_PASSWORD_STAGING"
               export CGHOSTNAME_BACKEND="$CGHOSTNAME_BACKEND_STAGIN"
               export CGHOSTNAME_FRONTEND="$CGHOSTNAME_FRONTEND_STAGIN"
-            elif [ "$CIRCLE_BRANCH" == dev ] ; then
+            elif [ "$CIRCLE_BRANCH" == "dev" ] ; then
               export CF_SPACE="tanf-dev"
               export CF_USERNAME="$CF_USERNAME_DEV"
               export CF_PASSWORD="$CF_PASSWORD_DEV"
               export CGHOSTNAME_BACKEND="$CGHOSTNAME_BACKEND_DEV"
               export CGHOSTNAME_FRONTEND="$CGHOSTNAME_FRONTEND_DEV"
-            elif [ $CIRCLE_BRANCH == "sprint-pr-hotfixes" ] ; then
+            elif [ "$CIRCLE_BRANCH" == "sprint-pr-hotfixes" ] ; then
               echo made it into if statement
               export CF_SPACE="tanf-dev"
               export CF_USERNAME="$CF_USERNAME_DEV"
