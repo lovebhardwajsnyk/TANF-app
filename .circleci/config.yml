@@ -11,8 +11,8 @@ jobs:
          docker_layer_caching: true 
       - checkout
       - run:
-        name: 'Ensure docker-compose exists,otherwise install it.'
-        command: ./scripts/docker-compose-check.sh
+          name: 'Ensure docker-compose exists,otherwise install it.'
+          command: "./scripts/docker-compose-check.sh"
       - run:
           name: "Test: Build and Spin-up Django API Service"
           command: "cd tdrs-backend; docker-compose build "
@@ -39,10 +39,10 @@ jobs:
       - checkout
       - run:
           name: 'Ensure docker exists,otherwise install it.'
-          command: ./scripts/docker-check.sh
+          command: "./scripts/docker-check.sh"
       - run:
           name: 'Ensure docker-compose exists,otherwise install it.'
-          command: ./scripts/docker-compose-check.sh     
+          command: "./scripts/docker-compose-check.sh"     
       - run:
           name: "Install Package Dependencies"
           command: "cd tdrs-frontend; yarn"
@@ -72,10 +72,10 @@ jobs:
       - checkout
       - run:
           name: 'Ensure sudo is installed, otherwise install it.'
-          command: ./scripts/sudo-check.sh
+          command: "./scripts/sudo-check.sh"
       - run:
           name: 'Ensure cf cli is installed, otherwise install it.'
-          command: ./scripts/cf-check.sh
+          command: "./scripts/cf-check.sh"
       - run:
           name: "Log Into Docker"
           command: "echo $DOCKER_PASSWORD | docker login --username $DOCKER_USERNAME --password-stdin"    
@@ -143,4 +143,4 @@ workflows:
           filters:
             branches:
               only:
-                - raft-main-test
+                - sprint-pr-hotfixes
