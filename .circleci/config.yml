@@ -28,6 +28,10 @@ jobs:
       - run:
           name:  "Test: Execute Python OWASP ZAP Vulnerability Scan"
           command: "cd tdrs-backend; ./zap-scanner.sh"
+      - snyk/scan:
+          target-file: tdrs-backend/Pipfile
+          severity-threshold: medium
+          fail-on-issues: false
   test-ui:
     working_directory: ~/tdp-apps
     docker:
@@ -41,30 +45,30 @@ jobs:
           name: Restore Yarn Cache
           keys:
             - yarn-packages-{{ checksum "yarn.lock" }}
-      # - run:
-      #     name: 'Ensure docker exists,otherwise install it.'
-      #     command: "./scripts/docker-check.sh"
-      # - run:
-      #     name: 'Ensure docker-compose exists,otherwise install it.'
-      #     command: "./scripts/docker-compose-check.sh"     
-      # - run:
-      #     name: "Install Package Dependencies"
-      #     command: "cd tdrs-frontend; yarn --cache-folder ~/.cache/yarn"
-      # - run:
-      #     name: "Run ESLint"
-      #     command: "cd tdrs-frontend; yarn lint"
-      # - run:
-      #     name: "Run Pa11y Accessibility Tests"
-      #     command: "cd tdrs-frontend; yarn test:accessibility"
-      # - run:
-      #     name: "Run Jest Unit Tests"
-      #     command: "cd tdrs-frontend; yarn test:ci"
-      # - run:
-      #     name: "Run Cypress Integration Tests"
-      #     command: "cd tdrs-frontend; yarn cy:run:ci"  
-      # - run:
-      #     name:  "Test: Execute Frontend  OWASP ZAP Vulnerability Scan"
-      #     command: "cd tdrs-frontend; ./zap-scanner.sh"  
+      - run:
+          name: 'Ensure docker exists,otherwise install it.'
+          command: "./scripts/docker-check.sh"
+      - run:
+          name: 'Ensure docker-compose exists,otherwise install it.'
+          command: "./scripts/docker-compose-check.sh"     
+      - run:
+          name: "Install Package Dependencies"
+          command: "cd tdrs-frontend; yarn --cache-folder ~/.cache/yarn"
+      - run:
+          name: "Run ESLint"
+          command: "cd tdrs-frontend; yarn lint"
+      - run:
+          name: "Run Pa11y Accessibility Tests"
+          command: "cd tdrs-frontend; yarn test:accessibility"
+      - run:
+          name: "Run Jest Unit Tests"
+          command: "cd tdrs-frontend; yarn test:ci"
+      - run:
+          name: "Run Cypress Integration Tests"
+          command: "cd tdrs-frontend; yarn cy:run:ci"  
+      - run:
+          name:  "Test: Execute Frontend  OWASP ZAP Vulnerability Scan"
+          command: "cd tdrs-frontend; ./zap-scanner.sh"  
       - run:
           name: 'Ensure sudo is installed, otherwise install it.'
           command: "./scripts/sudo-check.sh"
@@ -156,14 +160,14 @@ orbs:
 workflows:
   build-and-test:
     jobs:
-      # - test-backend
+      - test-backend
       - test-ui
-      # - deploy:
-      #     requires:
-      #       - test-backend
-      #       - test-ui
-      #     filters:
-      #       branches:
-      #         only:
-      #           - sprint-pr-hotfixes
+      - deploy:
+          requires:
+            - test-backend
+            - test-ui
+          filters:
+            branches:
+              only:
+                - sprint-pr-hotfixes
 

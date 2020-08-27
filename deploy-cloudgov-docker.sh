@@ -4,13 +4,27 @@
 # and then launch everything.
 #
 
-# These are the hostnames and docker image file names
+# The deployment strategy you wish to employ ( rolling update or setting up a new environment)
 DEPLOY_STRATEGY=${1}
+
+# The environment in which you want to execute these commands
 DEPLOY_ENV=${2}
+
+#The application name  defined via the manifest yml for the backend
 CGHOSTNAME_BACKEND=${3}
+
+#The application name  defined via the manifest yml for the frontend
 CGHOSTNAME_FRONTEND=${4}
+
+#The docker image to beferenced for the backend deployment ( please ensure this
+#is pushed to a public docker repo)
 DOCKER_IMAGE_BACKEND=${5}
+
+#The docker image to beferenced for the frontend deployment 
+#(please ensure this is pushed to a public docker repo)
 DOCKER_IMAGE_FRONTEND=${6}
+
+#The Github Branch triggered to execure this script if triggered in circleci
 CIRCLE_BRANCH=${7}
 
 echo DEPLOY_STRATEGY: $DEPLOY_STRATEGY
@@ -28,6 +42,8 @@ service_exists()
   cf service "$1" >/dev/null 2>&1
 }
 
+
+# Performs a normal deployment unless rolling is specified in the fucntion call
 update_frontend()
 {
 	if [ "$1" = "rolling" ] ; then
@@ -40,6 +56,7 @@ update_frontend()
 	cf map-route $CGHOSTNAME_FRONTEND app.cloud.gov --hostname "${CGHOSTNAME_FRONTEND}"
 }
 
+# Performs a normal deployment unless rolling is specified in the fucntion call
 update_backend()
 {
 	if [ "$1" = "rolling" ] ; then
@@ -59,13 +76,22 @@ update_backend()
 	cf map-route $CGHOSTNAME_BACKEND app.cloud.gov --hostname "$CGHOSTNAME_BACKEND"
 }
 
-# perform a rolling update for the backend and frontend deployments
+# perform a rolling update for the backend and frontend deployments if specifed,
+# otherwise perform a normal deployment 
 if [ $DEPLOY_STRATEGY = "rolling" ] ; then
 
 	update_backend 'rolling'
 	update_frontend 'rolling'
+else 
+    update_backend 
+	update_frontend 
 fi
 
+# create a new deployment environment 
+# Setup needed services
+# Deploy the backend
+# Bind the backend to needed services
+# Deploy the frontend
 if [ "$1" = "setup" ] ; then  echo
 	# create services (if needed)
 	if service_exists "tdp-app-deployer" ; then
@@ -109,6 +135,7 @@ if [ "$1" = "setup" ] ; then  echo
 	fi
 fi
 
+#Helper method to generate JWT cert and keys for new environment
 generate_jwt_cert() 
 {
 	echo "regenerating JWT cert/key"
@@ -129,13 +156,13 @@ generate_jwt_cert()
 	fi
 }
 
-# regenerate jwt cert
+# Regenerate jwt cert
 if [ "$1" = "regenjwt" ] ; then
 	generate_jwt_cert
 fi
 
 
-# tell people where to go
+# Tell people where to go
 echo
 echo
 echo "to log into the site, you will want to go to https://${CGHOSTNAME_FRONTEND}.app.cloud.gov/"
