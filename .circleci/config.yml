@@ -131,7 +131,7 @@ jobs:
               export CF_PASSWORD="$CF_PASSWORD_DEV"
               export CGHOSTNAME_BACKEND="$CGHOSTNAME_BACKEND_DEV"
               export CGHOSTNAME_FRONTEND="$CGHOSTNAME_FRONTEND_DEV"
-            elif [ "$CIRCLE_BRANCH" == sprint-pr-hotfixes ] ; then
+            elif [ $CIRCLE_BRANCH == "sprint-pr-hotfixes" ] ; then
               echo made it into if statement
               export CF_SPACE="tanf-dev"
               export CF_USERNAME="$CF_USERNAME_DEV"
@@ -150,7 +150,7 @@ jobs:
             echo $CF_PASSWORD
             echo $CGHOSTNAME_BACKEND
             echo $CGHOSTNAME_FRONTEND
-            
+
             # cf api https://api.fr.cloud.gov
             # cf auth "$CF_USERNAME" "$CF_PASSWORD"
             # cf target -o $CF_ORG -s "$CF_SPACE"
