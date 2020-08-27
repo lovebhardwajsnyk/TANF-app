@@ -10,42 +10,49 @@ CGHOSTNAME_FRONTEND=${2}
 DOCKER_IMAGE_BACKEND=${3}
 DOCKER_IMAGE_FRONTEND=${4}
 
-echo BACKEND $CGHOSTNAME_BACKEND
-echo FRONTEND $CGHOSTNAME_FRONTEND
-echo DOCKER BE $DOCKER_IMAGE_BACKEND
-echo DOCKER FE $DOCKER_IMAGE_FRONTEND
+echo BACKEND HOST: $CGHOSTNAME_BACKEND
+echo FRONTEND HOST: $CGHOSTNAME_FRONTEND
+echo DOCKER BACKEND IMAGE: $DOCKER_IMAGE_BACKEND
+echo DOCKER FRONTEND IMAGE: $DOCKER_IMAGE_FRONTEND
 
-# # function to check if a service exists
-# service_exists()
-# {
-#   cf service "$1" >/dev/null 2>&1
-# }
+# function to check if a service exists
+service_exists()
+{
+  cf service "$1" >/dev/null 2>&1
+}
 
-# update_frontend()
-# {
-# 	if [ "$1" = "rolling" ] ; then
-# 		# Do a zero downtime deploy.  This requires enough memory for
-# 		# two apps to exist in the org/space at one time.
-# 		cf push tdp-frontend --no-route -f tdrs-frontend/manifest.yml --strategy rolling || exit 1
-# 	else
-# 		cf push tdp-frontend -f tdrs-frontend/manifest.yml --no-route
-# 	fi
-# 	cf map-route tdp-frontend app.cloud.gov --hostname "${2}"
-# }
+update_frontend()
+{
+	if [ "$1" = "rolling" ] ; then
+		# Do a zero downtime deploy.  This requires enough memory for
+		# two apps to exist in the org/space at one time.
+		cf push tdp-frontend --no-route -f tdrs-frontend/manifest.yml --strategy rolling || exit 1
+	else
+		cf push tdp-frontend -f tdrs-frontend/manifest.yml --no-route
+	fi
+	cf map-route tdp-frontend app.cloud.gov --hostname "${2}"
+}
 
-# update_backend()
-# {
-# 	if [ "$1" = "rolling" ] ; then
-# 		# Do a zero downtime deploy.  This requires enough memory for
-# 		# two apps to exist in the org/space at one time.
-# 		cf push tdp-backend --no-route -f tdrs-backend/manifest.yml --strategy rolling || exit 1
-# 	else
-# 		cf push tdp-backend -f tdrs-backend/manifest.yml --no-route
-# 	fi
-# 	cf map-route tdp-backend app.cloud.gov --hostname "${2}"
-# }
+update_backend()
+{
+	if [ "$1" = "rolling" ] ; then
+		# Do a zero downtime deploy.  This requires enough memory for
+		# two apps to exist in the org/space at one time.
+		cf push tdp-backend --no-route -f tdrs-backend/manifest.yml --strategy rolling || exit 1
+	else
+		cf push tdp-backend -f tdrs-backend/manifest.yml --no-route
+
+		# set up JWT key if needed
+		if cf e tdp-backend | grep -q JWT_KEY ; then
+		   echo jwt cert already created
+		else
+		   export SETUPJWT="True"
+	   fi
+	fi
+	cf map-route tdp-backend app.cloud.gov --hostname "${2}"
+}
  
-# if [ "$1" = "setup" ] ; then  echo
+# if [ "$5" = "setup" ] ; then  echo
 # 	# create services (if needed)
 # 	if service_exists "tdp-app-deployer" ; then
 # 	  echo tdp-app-deployer already created
@@ -58,7 +65,7 @@ echo DOCKER FE $DOCKER_IMAGE_FRONTEND
 # 	if service_exists "db-raft" ; then
 # 	  echo db-raft already created
 # 	else
-# 	  if [ "$2" = "prod" ] ; then
+# 	  if [ "$6" = "prod" ] ; then
 # 	    cf create-service aws-rds medium-psql-redundant db-raft
 # 		  echo sleeping until db is awake
 # 		  for i in 1 2 3 ; do
@@ -71,18 +78,18 @@ echo DOCKER FE $DOCKER_IMAGE_FRONTEND
 # 	  fi
 # 	fi
 
-# 	# set up app
+# 	# set up backend
 # 	if cf app tdp-backend >/dev/null 2>&1 ; then
 # 		echo tdp-backend app already set up
 # 	else
-# 		cf push tdp-backend --docker-image ${DOCKER_IMAGE_BACKEND}
+# 	    update_backend()
 # 	fi
 
-# 	# set up JWT key if needed
-# 	if cf e tdp-backend | grep -q JWT_KEY ; then
-# 		echo jwt cert already created
+# 	# set up frontend
+# 	if cf app tdp-frontend >/dev/null 2>&1 ; then
+# 		echo tdp-frontend app already set up
 # 	else
-# 		export SETUPJWT="True"
+# 	    update_frontend()
 # 	fi
 # fi
 
@@ -106,7 +113,6 @@ echo DOCKER FE $DOCKER_IMAGE_FRONTEND
 # 	fi
 # }
 
-
 # # regenerate jwt cert
 # if [ "$1" = "regenjwt" ] ; then
 # 	generate_jwt_cert
@@ -128,13 +134,9 @@ echo DOCKER FE $DOCKER_IMAGE_FRONTEND
 # fi
 # cf map-route tdp-backend app.cloud.gov --hostname "$CGHOSTNAME_BACKEND"
 
-# # create a superuser if requested
-# # if [ "$1" = "createsuperuser" ] && [ -n "$2" ] ; then
-# # 	cf run-task tdp-backend "python manage.py createsuperuser --email $2 --noinput" --name createsuperuser
-# # fi
 
-# # tell people where to go
-# echo
-# echo
-# echo "to log into the site, you will want to go to https://${CGHOSTNAME_BACKEND}.app.cloud.gov/"
-# echo 'Have fun!'
+# tell people where to go
+echo
+echo
+echo "to log into the site, you will want to go to https://${CGHOSTNAME_FRONTEND}.app.cloud.gov/"
+echo 'Have fun!'
