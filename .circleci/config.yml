@@ -28,7 +28,7 @@ jobs:
       - run:
           name:  "Test: Execute Python OWASP ZAP Vulnerability Scan"
           command: "cd tdrs-backend; ./zap-scanner.sh"
-  test:
+  test-ui:
     working_directory: ~/tdp-apps
     docker:
       - image: cypress/base:10
@@ -70,7 +70,7 @@ jobs:
           key: yarn-packages-{{ checksum "yarn.lock" }}
           paths:
             - ~/.cache/yarn    
-  build:
+  deploy:
     working_directory: ~/tdp-apps
     docker:
       - image: circleci/python:3.8
@@ -147,4 +147,13 @@ jobs:
 workflows:
   build-and-test:
     jobs:
-      - build
+      - test-backend
+      - test-ui
+      - deploy:
+          requires:
+            - test-backend
+            - test-ui
+          filters:
+            branches:
+              only:
+                - sprint-pr-hotfixes
