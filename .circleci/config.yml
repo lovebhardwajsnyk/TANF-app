@@ -69,7 +69,9 @@ jobs:
           name: 'Ensure sudo is installed, otherwise install it.'
           command: "./scripts/sudo-check.sh"
       - snyk/scan:
-          target-file: "tdrs-frontned/yarn.lock"
+          target-file: tdrs-frontend/yarn.lock
+          severity-threshold: medium
+          fail-on-issues: false
       - save_cache:
           name: Save Yarn Cache
           key: yarn-packages-{{ checksum "yarn.lock" }}
