@@ -6,6 +6,7 @@
     "@trussworks/react-uswds": "^1.8.0",
     "axios": "^0.20.0",
     "babel-eslint": "10",
+    "concurrently": "^5.3.0",
     "connected-react-router": "^6.8.0",
     "eslint": "6.x",
     "history": "^4.7.2",
@@ -27,15 +28,15 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "start:ci": "HOST=localhost BROWSER=none yarn react-scripts start",
+    "start:ci": "CI=true HOST=localhost BROWSER=none yarn react-scripts start",
     "build": "react-scripts build",
     "cy:open": "cypress open",
     "cy:run": "cypress run",
-    "cy:run:ci": "start-server-and-test 'yarn start:ci' http://localhost:3000 'yarn cy:run'",
-    "test": "snyk test && react-scripts test",
+    "cy:run:ci":"concurrently -k -s first 'yarn start:ci' 'wait-on http://localhost:3000/ && yarn cy:run'",
+    "test": "react-scripts test",
     "test:cov": "react-scripts test --coverage --watchAll",
     "test:ci": "CI=1 react-scripts test --coverage",
-    "test:accessibility": "pa11y-ci --config .pa11yci.json",
+    "test:accessibility":"concurrently -k -s first 'yarn start:ci' 'wait-on http://localhost:3000/ && yarn pa11y-ci --config .pa11yci.json'",
     "eject": "react-scripts eject",
     "lint": "eslint src/ && echo 'Lint complete.'"
   },
@@ -78,7 +79,7 @@
     "redux-devtools-extension": "^2.13.8",
     "redux-mock-store": "^1.5.4",
     "snyk": "^1.385.0",
-    "start-server-and-test": "^1.11.2",
+    "start-server-and-test": "^1.11.3",
     "wait-on": "^5.2.0"
   },
   "jest": {

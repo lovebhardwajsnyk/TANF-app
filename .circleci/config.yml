@@ -28,7 +28,7 @@ jobs:
       - run:
           name:  "Test: Execute Python OWASP ZAP Vulnerability Scan"
           command: "cd tdrs-backend; ./zap-scanner.sh"
-  test-ui:
+  test:
     working_directory: ~/tdp-apps
     docker:
       - image: cypress/base:10
@@ -37,6 +37,10 @@ jobs:
       - setup_remote_docker: 
          docker_layer_caching: true 
       - checkout
+      - restore_cache:
+          name: Restore Yarn Cache
+          keys:
+            - yarn-packages-{{ checksum "yarn.lock" }}
       - run:
           name: 'Ensure docker exists,otherwise install it.'
           command: "./scripts/docker-check.sh"
@@ -60,8 +64,13 @@ jobs:
           command: "cd tdrs-frontend; yarn cy:run:ci"  
       - run:
           name:  "Test: Execute Frontend  OWASP ZAP Vulnerability Scan"
-          command: "cd tdrs-frontend; ./zap-scanner.sh"        
-  deploy:
+          command: "cd tdrs-frontend; ./zap-scanner.sh"    
+      - save_cache:
+          name: Save Yarn Cache
+          key: yarn-packages-{{ checksum "yarn.lock" }}
+          paths:
+            - ~/.cache/yarn    
+  build:
     working_directory: ~/tdp-apps
     docker:
       - image: circleci/python:3.8
@@ -91,6 +100,16 @@ jobs:
       - run:
           name:  "Push Frontend Image to Docker Hub"
           command: "docker push goraftdocker/tdp-frontend:$CIRCLE_BRANCH"
+      - run:
+          name:  "Update Backend VARS.YML with docker image name "
+          command: "echo docker-backend: goraftdocker/tdp-backend:$CIRCLE_BRANCH\ > tdrs-backend/vars-backend.yml"
+      - run:
+          name:  "Update Frontend VARS.YML with docker image name "
+          command: "echo docker-frontend: goraftdocker/tdp-frontend:$CIRCLE_BRANCH\ > tdrs-frontned/vars-frontend.yml"
+      - run:
+          name:  "Check Files"
+          command: "cat tdrs-frontned/vars-frontend.yml; cat tdrs-backend/vars-frontend.yml; "
+          
       # - run:
       #     name: deploy to cloud.gov
       #     command: |
@@ -134,11 +153,4 @@ jobs:
 workflows:
   build-and-test:
     jobs:
-      - test-ui
-      - deploy:
-          requires:
-            - test-ui
-          filters:
-            branches:
-              only:
-                - sprint-pr-hotfixes
+      - build
