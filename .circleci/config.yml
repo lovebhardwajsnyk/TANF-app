@@ -29,8 +29,9 @@ jobs:
           name:  "Test: Execute Python OWASP ZAP Vulnerability Scan"
           command: "cd tdrs-backend; ./zap-scanner.sh"
       - snyk/scan:
-          target-file: tdrs-backend/requirements.txt
+          target-file: tdrs-backend/Pipfile
           severity-threshold: medium
+          additional-arguments: "--allow-missing"
           fail-on-issues: false
   test-ui:
     working_directory: ~/tdp-apps
