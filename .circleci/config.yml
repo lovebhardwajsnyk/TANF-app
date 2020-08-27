@@ -102,10 +102,10 @@ jobs:
           command: "docker push goraftdocker/tdp-frontend:$CIRCLE_BRANCH"
       - run:
           name:  "Update VARS.YML files  with docker image names"
-          command: "./scripts/make-var-yml.sh"
+          command: "./scripts/make-var-yml.sh $CIRCLE_BRANCH"
       - run:
           name:  "Check Files"
-          command: "cat tdrs-frontned/vars-frontend.yml; cat tdrs-backend/vars-frontend.yml; "
+          command: "cat tdrs-frontend/vars-frontend.yml; cat tdrs-backend/vars-frontend.yml; "
           
       # - run:
       #     name: deploy to cloud.gov
