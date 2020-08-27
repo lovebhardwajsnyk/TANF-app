@@ -49,7 +49,7 @@ jobs:
           command: "./scripts/docker-compose-check.sh"     
       - run:
           name: "Install Package Dependencies"
-          command: "cd tdrs-frontend; yarn"
+          command: "cd tdrs-frontend; yarn --cache-folder ~/.cache/yarn"
       - run:
           name: "Run ESLint"
           command: "cd tdrs-frontend; yarn lint"
@@ -64,7 +64,9 @@ jobs:
           command: "cd tdrs-frontend; yarn cy:run:ci"  
       - run:
           name:  "Test: Execute Frontend  OWASP ZAP Vulnerability Scan"
-          command: "cd tdrs-frontend; ./zap-scanner.sh"    
+          command: "cd tdrs-frontend; ./zap-scanner.sh"  
+      - snyk/scan:
+          target-file: tdrs-frontned/yarn.lock
       - save_cache:
           name: Save Yarn Cache
           key: yarn-packages-{{ checksum "yarn.lock" }}
@@ -144,16 +146,20 @@ jobs:
             cf auth "$CF_USERNAME" "$CF_PASSWORD"
             cf target -o $CF_ORG -s "$CF_SPACE"
             ./deploy-cloudgov_docker.sh rolling test $CGHOSTNAME_BACKEND $CGHOSTNAME_FRONTEND $DOCKER_IMAGE_BACKEND $DOCKER_IMAGE_FRONTEND $CIRCLE_BRANCH
+orbs:
+  snyk: snyk/snyk@0.0.10
+version: 2.1
 workflows:
   build-and-test:
     jobs:
-      - test-backend
+      # - test-backend
       - test-ui
-      - deploy:
-          requires:
-            - test-backend
-            - test-ui
-          filters:
-            branches:
-              only:
-                - sprint-pr-hotfixes
+      # - deploy:
+      #     requires:
+      #       - test-backend
+      #       - test-ui
+      #     filters:
+      #       branches:
+      #         only:
+      #           - sprint-pr-hotfixes
+
