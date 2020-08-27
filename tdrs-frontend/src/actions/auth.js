@@ -14,6 +14,7 @@ export const fetchAuth = () => async (dispatch) => {
     } = await axios.get(URL, {
       withCredentials: true,
     })
+    console.log("user", user)
     if (user) {
       dispatch({ type: SET_AUTH, payload: { user } })
     } else {
