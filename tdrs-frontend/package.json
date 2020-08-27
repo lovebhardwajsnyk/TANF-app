@@ -35,7 +35,7 @@
     "test": "snyk test && react-scripts test",
     "test:cov": "react-scripts test --coverage --watchAll",
     "test:ci": "CI=1 react-scripts test --coverage",
-    "test:accessibility": "start-server-and-test 'yarn start:ci' http://localhost:3000 'yarn pa11y-ci --config .pa11yci.json'",
+    "test:accessibility": "pa11y-ci --config .pa11yci.json",
     "eject": "react-scripts eject",
     "lint": "eslint src/ && echo 'Lint complete.'"
   },
