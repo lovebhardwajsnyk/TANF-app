@@ -4,6 +4,7 @@ Adding a template for Pull Requests
 
 - expected change 1
 - expected change 2
+- expected change 3
 
 ###[AC] This pull request is ready to merge when...
 
